@@ -2,6 +2,7 @@
 
 'use strict';
 
+require('dotenv').config();
 var NoisyBot = require('../lib/noisybot');
 
 var token =  process.env.BOT_API_KEY;
