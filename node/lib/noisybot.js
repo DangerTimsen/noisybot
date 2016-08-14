@@ -40,7 +40,7 @@ NoisyBot.prototype._loadBotUser = function () {
 
 NoisyBot.prototype._welcomeMessage = function () {
     this.postMessageToUser('tim', 'Hi guys, how is the hammer hanging?' +
-        '\n I can shut up people. Just say `RUHE` or `' + this.name + '` to invoke me!',
+        '\n I can shut up people. Just say something with the word `ruhe` in it or just send a direct message to `' + this.name + '` to invoke me!',
         {as_user: true});
 };
 
@@ -51,8 +51,8 @@ NoisyBot.prototype._onMessage = function (message) {
     
     if (this._isChatMessage(message) &&
         //this._isChannelConversation(message) &&
-        //!this._isFromNoisyBot(message) &&
-        this._isMentioningRuhe(message)
+        !this._isFromNoisyBot(message) &&
+        this._isMentioningKeywords(message)
     ) {
         //turn on lights
         console.log('replying');
@@ -69,25 +69,45 @@ NoisyBot.prototype._isChannelConversation = function (message) {
         message.channel[0] === 'C';
 };
 
+NoisyBot.prototype._isDirectConversation = function (message) {
+    return typeof message.channel === 'string' &&
+        message.channel[0] === 'D';
+};
+
 NoisyBot.prototype._isFromNoisyBot = function (message) {
     return message.user === this.user.id;
 };
 
-NoisyBot.prototype._isMentioningRuhe = function (message) {
+NoisyBot.prototype._isMentioningKeywords = function (message) {
     return message.text.toLowerCase().indexOf('ruhe') > -1 ||
         message.text.toLowerCase().indexOf(this.name) > -1;
 };
 
 NoisyBot.prototype._reply = function (originalMessage) {
+    var replyMessage = 'I am punching the transistors';
+
+
+    if(this._isDirectConversation(originalMessage)){
+        var user = this._getUserById(originalMessage.user);
+        this.postMessageToUser(user.name, replyMessage, {as_user: true});   
+    }
     //turn on transistors
-this.postMessageToUser('tim', 'lääuft',        {as_user: true});
+
     //reply 
-    var channel = self._getChannelById(originalMessage.channel);
-        self.postMessageToChannel(channel.name, 'I am punching the transistors', {as_user: true});
+    if(this._isChannelConversation(originalMessage)){
+        var channel = this._getChannelById(originalMessage.channel);
+        this.postMessageToChannel(channel.name, replyMessage, {as_user: true});
+    }
 };
 
 NoisyBot.prototype._getChannelById = function (channelId) {
     return this.channels.filter(function (item) {
         return item.id === channelId;
+    })[0];
+};
+
+NoisyBot.prototype._getUserById = function (userId) {
+    return this.users.filter(function (item) {
+        return item.id === userId;
     })[0];
 };
