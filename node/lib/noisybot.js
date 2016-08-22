@@ -6,12 +6,15 @@
 
 var util = require('util');
 var Bot = require('slackbots');
+var raspberry = require('./raspberryio.js');
 
 var NoisyBot = function Constructor(settings) {
     this.settings = settings;
     this.settings.name = this.settings.name || 'noisybot';
 
     this.user = null;
+
+    raspberry.enableLights();
 };
 
 // inherits methods and properties from the Bot constructor
@@ -39,8 +42,8 @@ NoisyBot.prototype._loadBotUser = function () {
 };
 
 NoisyBot.prototype._welcomeMessage = function () {
-    this.postMessageToUser('tim', 'Hi guys, how is the hammer hanging?' +
-        '\n I can shut up people. Just say something with the word `ruhe` in it or just send a direct message to `' + this.name + '` to invoke me!',
+    this.postMessageToUser('tim', 'Hi guys,' +
+        '\n I can try to shut up people. Just send a direct message with the word `ruhe` in it to invoke me!',
         {as_user: true});
 };
 
