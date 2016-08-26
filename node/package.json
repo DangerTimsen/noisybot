@@ -11,6 +11,6 @@
   "dependencies": {
     "dotenv": "^2.0.0",
     "slackbots": "^0.5.2",
-    "rpi-gpio": "^0.7.0"
+    "gpio": "0.2.7"
   }
 }
