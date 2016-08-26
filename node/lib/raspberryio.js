@@ -25,6 +25,7 @@ function enableLights() {
     
     lightPin.set(function(){
        console.log('Enabled lights: pinValue: ' + lightPin.value);
+       return lightPin.value;
     });
 }
 

@@ -14,7 +14,7 @@ var NoisyBot = function Constructor(settings) {
 
     this.user = null;
 
-    raspberry.enableLights();
+
 };
 
 // inherits methods and properties from the Bot constructor
@@ -88,7 +88,7 @@ NoisyBot.prototype._isMentioningKeywords = function (message) {
 
 NoisyBot.prototype._reply = function (originalMessage) {
     var replyMessage = 'I am punching the transistors';
-
+    replyMessage += raspberry.enableLights();
 
     if(this._isDirectConversation(originalMessage)){
         var user = this._getUserById(originalMessage.user);
