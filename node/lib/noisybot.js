@@ -9,13 +9,15 @@ var Bot = require('slackbots');
 var raspberry = require('./raspberryio.js');
 var Permission = require('./userpermission');
 
+//this.userwhitelist set by retrieveUserWhitelist()
+
 var NoisyBot = function Constructor(settings, userwhitelist) {
     this.settings = settings;
     this.settings.name = this.settings.name || 'noisybot';
 
-    this.user = null;
-
     retrieveUserWhitelist();
+
+    this.user = null;
 };
 
 // inherits methods and properties from the Bot constructor
@@ -43,9 +45,9 @@ NoisyBot.prototype._loadBotUser = function () {
 };
 
 NoisyBot.prototype._welcomeMessage = function () {
-    this.postMessageToUser('tim', 'Hi guys,' +
+    /*this.postMessageToUser('tim', 'Hi guys,' +
         '\n I can try to shut up people. Just send a direct message with the word `ruhe` in it to invoke me!',
-        { as_user: true });
+        { as_user: true });*/
 };
 
 NoisyBot.prototype._onMessage = function (message) {
@@ -56,6 +58,7 @@ NoisyBot.prototype._onMessage = function (message) {
     if (this._isChatMessage(message) &&
         //this._isChannelConversation(message) &&
         !this._isFromNoisyBot(message) &&
+        this._isFromAllowedUser(message) &&
         this._isMentioningKeywords(message)
     ) {
         //turn on lights
@@ -80,6 +83,17 @@ NoisyBot.prototype._isDirectConversation = function (message) {
 
 NoisyBot.prototype._isFromNoisyBot = function (message) {
     return message.user === this.user.id;
+};
+
+NoisyBot.prototype._isFromAllowedUser = function (message) {
+    var user = this.getUser(message.user);
+
+    if (this.userwhitelist.indexOf(user.name) > -1) {
+        return true;
+    } else {
+        return false;
+    }
+
 };
 
 NoisyBot.prototype._isMentioningKeywords = function (message) {
@@ -117,12 +131,24 @@ NoisyBot.prototype._getUserById = function (userId) {
 };
 
 function retrieveUserWhitelist() {
-    var getPromise = Permission.getUserWhitelist();
+    var self = this;
+
+    var getPromise = Permission.getUserWhitelistRequest();
 
     getPromise.on('success', function (response) {
-        var bla = response.data.Body.toString();
-        this.userwhitelist = JSON.parse(bla);
-        console.log(this.users);
+        if (response.error) { console.log(error); }
+        else {
+            var content = response.data.Body.toString();
+            var rawarray = JSON.parse(content);
+            var result = [];
+            rawarray.forEach(function (current, index, array) {
+                result.push(self.users.filter(function (item) {
+                    return item.name === current
+                })[0])
+            })
+
+            self.userwhitelist = result;
+        }
     });
 
     getPromise.send();
