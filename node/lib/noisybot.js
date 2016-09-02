@@ -13,8 +13,6 @@ var NoisyBot = function Constructor(settings) {
     this.settings.name = this.settings.name || 'noisybot';
 
     this.user = null;
-
-
 };
 
 // inherits methods and properties from the Bot constructor
@@ -24,6 +22,10 @@ module.exports = NoisyBot;
 
 NoisyBot.prototype.run = function () {
     NoisyBot.super_.call(this, this.settings);
+
+    this.getUsers().then(function(result){
+        var bla = result;
+    });
 
     this.on('start', this._onStart);
     this.on('message', this._onMessage);
