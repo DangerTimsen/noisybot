@@ -7,12 +7,15 @@
 var util = require('util');
 var Bot = require('slackbots');
 var raspberry = require('./raspberryio.js');
+var Permission = require('./userpermission');
 
-var NoisyBot = function Constructor(settings) {
+var NoisyBot = function Constructor(settings, userwhitelist) {
     this.settings = settings;
     this.settings.name = this.settings.name || 'noisybot';
 
     this.user = null;
+
+    retrieveUserWhitelist();
 };
 
 // inherits methods and properties from the Bot constructor
@@ -22,10 +25,6 @@ module.exports = NoisyBot;
 
 NoisyBot.prototype.run = function () {
     NoisyBot.super_.call(this, this.settings);
-
-    this.getUsers().then(function(result){
-        var bla = result;
-    });
 
     this.on('start', this._onStart);
     this.on('message', this._onMessage);
@@ -46,14 +45,14 @@ NoisyBot.prototype._loadBotUser = function () {
 NoisyBot.prototype._welcomeMessage = function () {
     this.postMessageToUser('tim', 'Hi guys,' +
         '\n I can try to shut up people. Just send a direct message with the word `ruhe` in it to invoke me!',
-        {as_user: true});
+        { as_user: true });
 };
 
 NoisyBot.prototype._onMessage = function (message) {
 
     console.log('got message');
     console.log(message);
-    
+
     if (this._isChatMessage(message) &&
         //this._isChannelConversation(message) &&
         !this._isFromNoisyBot(message) &&
@@ -92,16 +91,16 @@ NoisyBot.prototype._reply = function (originalMessage) {
     var replyMessage = 'I am punching the transistors';
     replyMessage += raspberry.enableLights();
 
-    if(this._isDirectConversation(originalMessage)){
+    if (this._isDirectConversation(originalMessage)) {
         var user = this._getUserById(originalMessage.user);
-        this.postMessageToUser(user.name, replyMessage, {as_user: true});   
+        this.postMessageToUser(user.name, replyMessage, { as_user: true });
     }
     //turn on transistors
 
     //reply 
-    if(this._isChannelConversation(originalMessage)){
+    if (this._isChannelConversation(originalMessage)) {
         var channel = this._getChannelById(originalMessage.channel);
-        this.postMessageToChannel(channel.name, replyMessage, {as_user: true});
+        this.postMessageToChannel(channel.name, replyMessage, { as_user: true });
     }
 };
 
@@ -116,3 +115,15 @@ NoisyBot.prototype._getUserById = function (userId) {
         return item.id === userId;
     })[0];
 };
+
+function retrieveUserWhitelist() {
+    var getPromise = Permission.getUserWhitelist();
+
+    getPromise.on('success', function (response) {
+        var bla = response.data.Body.toString();
+        this.userwhitelist = JSON.parse(bla);
+        console.log(this.users);
+    });
+
+    getPromise.send();
+}
