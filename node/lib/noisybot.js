@@ -8,15 +8,13 @@ var util = require('util');
 var Bot = require('slackbots');
 var raspberry = require('./raspberryio.js');
 var Permission = require('./userpermission');
+var retrieveUserWhitelist = retrieveUserWhiteList;
 
 //this.userwhitelist set by retrieveUserWhitelist()
 
-var NoisyBot = function Constructor(settings, userwhitelist) {
+var NoisyBot = function Constructor(settings) {
     this.settings = settings;
     this.settings.name = this.settings.name || 'noisybot';
-
-    retrieveUserWhitelist();
-
     this.user = null;
 };
 
@@ -35,6 +33,8 @@ NoisyBot.prototype.run = function () {
 NoisyBot.prototype._onStart = function () {
     this._loadBotUser();
     this._welcomeMessage();
+    this._setUserWhitelist();
+    
 };
 
 NoisyBot.prototype._loadBotUser = function () {
@@ -44,6 +44,12 @@ NoisyBot.prototype._loadBotUser = function () {
     })[0];
 };
 
+NoisyBot.prototype._setUserWhitelist = function(){
+    if(!this.userwhitelist){
+        retrieveUserWhitelist(this);
+    }
+}
+
 NoisyBot.prototype._welcomeMessage = function () {
     /*this.postMessageToUser('tim', 'Hi guys,' +
         '\n I can try to shut up people. Just send a direct message with the word `ruhe` in it to invoke me!',
@@ -51,14 +57,13 @@ NoisyBot.prototype._welcomeMessage = function () {
 };
 
 NoisyBot.prototype._onMessage = function (message) {
-
     console.log('got message');
     console.log(message);
 
     if (this._isChatMessage(message) &&
         //this._isChannelConversation(message) &&
         !this._isFromNoisyBot(message) &&
-        this._isFromAllowedUser(message) &&
+        //this._isFromAllowedUser(message) &&
         this._isMentioningKeywords(message)
     ) {
         //turn on lights
@@ -103,7 +108,7 @@ NoisyBot.prototype._isMentioningKeywords = function (message) {
 
 NoisyBot.prototype._reply = function (originalMessage) {
     var replyMessage = 'I am punching the transistors';
-    replyMessage += raspberry.enableLights();
+    replyMessage += raspberry.enableLights(5);
 
     if (this._isDirectConversation(originalMessage)) {
         var user = this._getUserById(originalMessage.user);
@@ -130,9 +135,7 @@ NoisyBot.prototype._getUserById = function (userId) {
     })[0];
 };
 
-function retrieveUserWhitelist() {
-    var self = this;
-
+function retrieveUserWhiteList(noisybot) {
     var getPromise = Permission.getUserWhitelistRequest();
 
     getPromise.on('success', function (response) {
@@ -142,14 +145,17 @@ function retrieveUserWhitelist() {
             var rawarray = JSON.parse(content);
             var result = [];
             rawarray.forEach(function (current, index, array) {
-                result.push(self.users.filter(function (item) {
+                var user = noisybot.users.filter(function (item) {
                     return item.name === current
-                })[0])
+                })[0];
+                
+                if(user)
+                    result.push(user);
             })
 
-            self.userwhitelist = result;
+            noisybot.userwhitelist = result;
         }
     });
 
     getPromise.send();
-}
+};
