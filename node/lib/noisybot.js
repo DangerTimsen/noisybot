@@ -63,8 +63,8 @@ NoisyBot.prototype._onMessage = function (message) {
         //this._isChannelConversation(message) &&
         !this._isFromNoisyBot(message) &&
         this._isMentioningKeywords(message) &&
-        this._isFromAllowedUser(message)
-    ) {
+        this._isFromAllowedUser(message)) 
+    {
         //turn on lights
         console.log('replying');
         this._reply(message);
