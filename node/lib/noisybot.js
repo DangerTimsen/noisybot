@@ -34,7 +34,6 @@ NoisyBot.prototype._onStart = function () {
     this._loadBotUser();
     this._welcomeMessage();
     this._setUserWhitelist();
-    
 };
 
 NoisyBot.prototype._loadBotUser = function () {
@@ -63,8 +62,8 @@ NoisyBot.prototype._onMessage = function (message) {
     if (this._isChatMessage(message) &&
         //this._isChannelConversation(message) &&
         !this._isFromNoisyBot(message) &&
-        //this._isFromAllowedUser(message) &&
-        this._isMentioningKeywords(message)
+        this._isMentioningKeywords(message) &&
+        this._isFromAllowedUser(message)
     ) {
         //turn on lights
         console.log('replying');
@@ -91,14 +90,13 @@ NoisyBot.prototype._isFromNoisyBot = function (message) {
 };
 
 NoisyBot.prototype._isFromAllowedUser = function (message) {
-    var user = this.getUser(message.user);
+    var user = this._getUserById(message.user);
 
-    if (this.userwhitelist.indexOf(user.name) > -1) {
+    if (this.userwhitelist.some(userwhite => userwhite.name ===  user.name)) {
         return true;
     } else {
         return false;
     }
-
 };
 
 NoisyBot.prototype._isMentioningKeywords = function (message) {
@@ -107,8 +105,8 @@ NoisyBot.prototype._isMentioningKeywords = function (message) {
 };
 
 NoisyBot.prototype._reply = function (originalMessage) {
-    var replyMessage = 'I am punching the transistors';
-    replyMessage += raspberry.enableLights(5);
+    var replyMessage = 'I am punching the transistors ';
+    raspberry.enableLights(5);
 
     if (this._isDirectConversation(originalMessage)) {
         var user = this._getUserById(originalMessage.user);
