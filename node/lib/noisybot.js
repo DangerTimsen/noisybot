@@ -108,9 +108,9 @@ NoisyBot.prototype._reply = function (originalMessage) {
     var user = this._getUserById(message.user);
 
     if (!this._isFromAllowedUser(originalMessage)) {
-        replyMessage = 'Hello '+ user.name + '. You dont seem to have permission to invoke strobo lightning storm. Please contact my master if you like to use me.';
+        replyMessage = 'Hello '+ user.name + '. You dont seem to have permission to invoke strobo lightning storm. Please contact my creator if you like to use me.';
     } else {
-        replyMessage = 'I am punching the transistor, master ' + user.name;
+        replyMessage = 'I am punching the transistor, master ' + user.name + '. I will keep the light on for 10 seconds for you, master.' ;
         //turn on transistors
         turnOnLights(10);
     }
