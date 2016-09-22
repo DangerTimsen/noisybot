@@ -43,8 +43,8 @@ NoisyBot.prototype._loadBotUser = function () {
     })[0];
 };
 
-NoisyBot.prototype._setUserWhitelist = function(){
-    if(!this.userwhitelist){
+NoisyBot.prototype._setUserWhitelist = function () {
+    if (!this.userwhitelist) {
         retrieveUserWhitelist(this);
     }
 }
@@ -62,11 +62,8 @@ NoisyBot.prototype._onMessage = function (message) {
     if (this._isChatMessage(message) &&
         //this._isChannelConversation(message) &&
         !this._isFromNoisyBot(message) &&
-        this._isMentioningKeywords(message) &&
-        this._isFromAllowedUser(message)) 
-    {
-        //turn on lights
-        console.log('replying');
+        this._isMentioningKeywords(message)) {
+
         this._reply(message);
     }
 };
@@ -92,7 +89,7 @@ NoisyBot.prototype._isFromNoisyBot = function (message) {
 NoisyBot.prototype._isFromAllowedUser = function (message) {
     var user = this._getUserById(message.user);
 
-    if (this.userwhitelist.some(userwhite => userwhite.name ===  user.name)) {
+    if (this.userwhitelist.some(userwhite => userwhite.name === user.name)) {
         return true;
     } else {
         return false;
@@ -105,15 +102,23 @@ NoisyBot.prototype._isMentioningKeywords = function (message) {
 };
 
 NoisyBot.prototype._reply = function (originalMessage) {
-    var replyMessage = 'I am punching the transistors ';
-    raspberry.enableLights(5);
+
+    var replyMessage = '';
+    
+    var user = this._getUserById(message.user);
+
+    if (!this._isFromAllowedUser(originalMessage)) {
+        replyMessage = 'Hello '+ user.name + '. You dont seem to have permission to invoke strobo lightning storm. Please contact my master if you like to use me.';
+    } else {
+        replyMessage = 'I am punching the transistor, master ' + user.name;
+        //turn on transistors
+        turnOnLights(10);
+    }
 
     if (this._isDirectConversation(originalMessage)) {
         var user = this._getUserById(originalMessage.user);
         this.postMessageToUser(user.name, replyMessage, { as_user: true });
     }
-    //turn on transistors
-
     //reply 
     if (this._isChannelConversation(originalMessage)) {
         var channel = this._getChannelById(originalMessage.channel);
@@ -146,8 +151,8 @@ function retrieveUserWhiteList(noisybot) {
                 var user = noisybot.users.filter(function (item) {
                     return item.name === current
                 })[0];
-                
-                if(user)
+
+                if (user)
                     result.push(user);
             })
 
@@ -157,3 +162,7 @@ function retrieveUserWhiteList(noisybot) {
 
     getPromise.send();
 };
+
+function turnOnLights(seconds) {
+    return raspberry.enableLights(seconds);
+}
