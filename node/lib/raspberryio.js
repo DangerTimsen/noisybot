@@ -20,13 +20,20 @@ var lightPin = gpio.export(7,{
    }
 })
 
-function enableLights() {
-    console.log('Try enabling lights');
-    
+function enableLights(seconds) {
+    console.log('Try enabling lights for ' + seconds + ' seconds' );
+
     lightPin.set(function(){
        console.log('Enabled lights: pinValue: ' + lightPin.value);
-       return lightPin.value;
     });
+    setTimeout(disableLights, seconds * 1000)
+    
+    return lightPin.value;    
+}
+
+function disableLights(){
+    lightPin.reset();
+    console.log('Disabling lights: pinValue: ' + lightPin.value);
 }
 
 exports.enableLights = enableLights;
