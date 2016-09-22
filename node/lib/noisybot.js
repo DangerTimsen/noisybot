@@ -97,20 +97,19 @@ NoisyBot.prototype._isFromAllowedUser = function (message) {
 };
 
 NoisyBot.prototype._isMentioningKeywords = function (message) {
-    return message.text.toLowerCase().indexOf('ruhe') > -1 ||
-        message.text.toLowerCase().indexOf(this.name) > -1;
+    return message.text.toLowerCase().indexOf('ruhe') > -1;
 };
 
 NoisyBot.prototype._reply = function (originalMessage) {
 
     var replyMessage = '';
     
-    var user = this._getUserById(message.user);
+    var user = this._getUserById(originalMessage.user);
 
     if (!this._isFromAllowedUser(originalMessage)) {
         replyMessage = 'Hello '+ user.name + '. You dont seem to have permission to invoke strobo lightning storm. Please contact my creator if you like to use me.';
     } else {
-        replyMessage = 'I am punching the transistor, master ' + user.name + '. I will keep the light on for 10 seconds for you, master.' ;
+        replyMessage = 'I am punching the transistor, master ' + user.name + '. I will keep the light on for 10 seconds for you.' ;
         //turn on transistors
         turnOnLights(10);
     }
