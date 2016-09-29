@@ -6,9 +6,10 @@
 
 var util = require('util');
 var Bot = require('slackbots');
-var raspberry = require('./raspberryio.js');
 var Permission = require('./userpermission');
 var retrieveUserWhitelist = retrieveUserWhiteList;
+
+var hardware = {};
 
 //this.userwhitelist set by retrieveUserWhitelist()
 
@@ -16,7 +17,20 @@ var NoisyBot = function Constructor(settings) {
     this.settings = settings;
     this.settings.name = this.settings.name || 'noisybot';
     this.user = null;
+
+    setHardware(settings.hardwaretype);
 };
+
+function setHardware(hardwaretype) {
+    switch (hardwaretype.toLowerCase()) {
+        case "rpi":
+            hardware = require('./raspberryio.js');
+            break;
+        case "odroid":
+            hardware = require('./odroidio.js');
+            break;
+    }
+}
 
 // inherits methods and properties from the Bot constructor
 util.inherits(NoisyBot, Bot);
@@ -35,6 +49,7 @@ NoisyBot.prototype._onStart = function () {
     this._welcomeMessage();
     this._setUserWhitelist();
 };
+
 
 NoisyBot.prototype._loadBotUser = function () {
     var self = this;
@@ -97,19 +112,20 @@ NoisyBot.prototype._isFromAllowedUser = function (message) {
 };
 
 NoisyBot.prototype._isMentioningKeywords = function (message) {
-    return message.text.toLowerCase().indexOf('ruhe') > -1;
+    return message.text.toLowerCase().indexOf('ruhe') > -1 ||
+        message.text.toLowerCase().indexOf('silence') > -1;
 };
 
 NoisyBot.prototype._reply = function (originalMessage) {
 
     var replyMessage = '';
-    
+
     var user = this._getUserById(originalMessage.user);
 
     if (!this._isFromAllowedUser(originalMessage)) {
-        replyMessage = 'Hello '+ user.name + '. You dont seem to have permission to invoke strobo lightning storm. Please contact my creator if you like to use me.';
+        replyMessage = 'Hello ' + user.name + '. You dont seem to have permission to invoke strobo lightning storm. Please contact my creator if you like to use me.';
     } else {
-        replyMessage = 'I am punching the transistor, master ' + user.name + '. I will keep the light on for 10 seconds for you.' ;
+        replyMessage = 'I am punching the transistor, master ' + user.name + '. I will keep the light on for 10 seconds for you.';
         //turn on transistors
         turnOnLights(10);
     }
@@ -163,5 +179,5 @@ function retrieveUserWhiteList(noisybot) {
 };
 
 function turnOnLights(seconds) {
-    return raspberry.enableLights(seconds);
+    return hardware.enableLights(seconds);
 }

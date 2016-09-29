@@ -12,6 +12,7 @@
     "dotenv": "^2.0.0",
     "slackbots": "^0.5.2",
     "gpio": "0.2.7",
+    "odroid-gpio": "0.0.2",
     "aws-sdk": "2.5.5"
   }
 }
