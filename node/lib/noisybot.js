@@ -7,6 +7,7 @@
 var util = require('util');
 var Bot = require('slackbots');
 var Permission = require('./userpermission');
+var LocalIo = require('./localio');
 var retrieveUserWhitelist = retrieveUserWhiteList;
 
 var hardware = {};
@@ -29,6 +30,8 @@ function setHardware(hardwaretype) {
         case "odroid":
             hardware = require('./odroidio.js');
             break;
+        default:
+            hardware = require('./raspberryio.js');
     }
 }
 
@@ -74,13 +77,20 @@ NoisyBot.prototype._onMessage = function (message) {
     console.log('got message');
     console.log(message);
 
-    if (this._isChatMessage(message) &&
-        //this._isChannelConversation(message) &&
-        !this._isFromNoisyBot(message) &&
-        this._isMentioningKeywords(message)) {
-
-        this._reply(message);
+    if (!this._isChatMessage(message) &&
+        this._isFromNoisyBot(message)) {
+        return;
     }
+
+    if (this._isMentioningLightKeywords(message)) {
+        this._replyToLight(message);
+    }
+
+    if (this._isMentioningLocalIpKeywords(message)) {
+        this._replyToLocalIp(message);
+    }
+
+
 };
 
 NoisyBot.prototype._isChatMessage = function (message) {
@@ -111,12 +121,17 @@ NoisyBot.prototype._isFromAllowedUser = function (message) {
     }
 };
 
-NoisyBot.prototype._isMentioningKeywords = function (message) {
+NoisyBot.prototype._isMentioningLightKeywords = function (message) {
     return message.text.toLowerCase().indexOf('ruhe') > -1 ||
         message.text.toLowerCase().indexOf('silence') > -1;
 };
 
-NoisyBot.prototype._reply = function (originalMessage) {
+NoisyBot.prototype._isMentioningLocalIpKeywords = function (message) {
+    return message.text.toLowerCase().indexOf('addresses') > -1 ||
+        message.text.toLowerCase().indexOf('ip') > -1;
+};
+
+NoisyBot.prototype._replyToLight = function (originalMessage) {
 
     var replyMessage = '';
 
@@ -128,6 +143,38 @@ NoisyBot.prototype._reply = function (originalMessage) {
         replyMessage = 'I am punching the transistor, master ' + user.name + '. I will keep the light on for 10 seconds for you.';
         //turn on transistors
         turnOnLights(10);
+    }
+
+    if (this._isDirectConversation(originalMessage)) {
+        var user = this._getUserById(originalMessage.user);
+        this.postMessageToUser(user.name, replyMessage, { as_user: true });
+    }
+    //reply 
+    if (this._isChannelConversation(originalMessage)) {
+        var channel = this._getChannelById(originalMessage.channel);
+        this.postMessageToChannel(channel.name, replyMessage, { as_user: true });
+    }
+};
+
+NoisyBot.prototype._replyToLocalIp = function (originalMessage) {
+
+    var replyMessage = '';
+
+    var user = this._getUserById(originalMessage.user);
+
+    if (!this._isFromAllowedUser(originalMessage)) {
+        replyMessage = 'Hello ' + user.name + '. You dont seem to have permission to gather my local network addresses. Please contact my creator if you like to use me.';
+    } else {
+        replyMessage = 'I will try to access my operating system to obtain my addresses, master ' + user.name + '. Everything you want, master.\n';
+        var localIpResult = LocalIo.getLocalIpAdresses();
+        if (localIpResult) {
+            replyMessage += 'I got it, master. I got it for you. Here it is, master.\n';
+            localIpResult.forEach(function (element) {
+                replyMessage += element + '\n';
+            }, this);
+        } else {
+            replyMessage += 'Sorry master. OS no speak to me. nooo. so sorry master.'
+        }
     }
 
     if (this._isDirectConversation(originalMessage)) {
