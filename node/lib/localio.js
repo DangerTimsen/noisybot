@@ -19,7 +19,7 @@ function getLocalIpAdresses() {
 
             if (alias >= 1) {
                 // this single interface has multiple ipv4 addresses
-                result.push(ifname + ':' + iface.address)
+                result.push(ifname + ' : ' + iface.address)
             } else {
                 // this interface has only one ipv4 adress
                 result.push(ifname + ' : ' + iface.address)
