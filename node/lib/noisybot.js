@@ -77,8 +77,11 @@ NoisyBot.prototype._onMessage = function (message) {
     console.log('got message');
     console.log(message);
 
-    if (!this._isChatMessage(message) &&
-        this._isFromNoisyBot(message)) {
+    if (!this._isChatMessage(message)) {
+        return;
+    }
+
+    if(this._isFromNoisyBot(message)){
         return;
     }
 
