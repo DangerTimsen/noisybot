@@ -45,6 +45,10 @@ NoisyBot.prototype.run = function () {
 
     this.on('start', this._onStart);
     this.on('message', this._onMessage);
+    this.on('error', function (e) {
+        console.log("Error: " + e.message);
+        console.log(e.stack);
+    });
 };
 
 NoisyBot.prototype._onStart = function () {
@@ -81,7 +85,7 @@ NoisyBot.prototype._onMessage = function (message) {
         return;
     }
 
-    if(this._isFromNoisyBot(message)){
+    if (this._isFromNoisyBot(message)) {
         return;
     }
 
