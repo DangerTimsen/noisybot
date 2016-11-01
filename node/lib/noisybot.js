@@ -117,6 +117,8 @@ NoisyBot.prototype._isFromNoisyBot = function (message) {
 NoisyBot.prototype._isFromAllowedUser = function (message) {
     var user = this._getUserById(message.user);
 
+    this._setUserWhitelist();
+
     if (this.userwhitelist.some(userwhite => userwhite.name === user.name)) {
         return true;
     } else {
