@@ -88,16 +88,16 @@ NoisyBot.prototype._onMessage = function (message) {
     if (this._isFromNoisyBot(message)) {
         return;
     }
-
     if (this._isMentioningLightKeywords(message)) {
         this._replyToLight(message);
     }
-
     if (this._isMentioningLocalIpKeywords(message)) {
         this._replyToLocalIp(message);
     }
 
-
+    if (this._isMentioningSpecialKeywords(message)) {
+        this._replyToRandomChannel(message);
+    }
 };
 
 NoisyBot.prototype._isChatMessage = function (message) {
@@ -138,6 +138,10 @@ NoisyBot.prototype._isMentioningLightKeywords = function (message) {
 NoisyBot.prototype._isMentioningLocalIpKeywords = function (message) {
     return message.text.toLowerCase().indexOf('addresses') > -1 ||
         message.text.toLowerCase().indexOf('ip') > -1;
+};
+
+NoisyBot.prototype._isMentioningSpecialKeywords = function (message) {
+    return message.text.toLowerCase().indexOf('apologizedowntime') > -1;
 };
 
 NoisyBot.prototype._replyToLight = function (originalMessage) {
@@ -197,9 +201,31 @@ NoisyBot.prototype._replyToLocalIp = function (originalMessage) {
     }
 };
 
+NoisyBot.prototype._replyToRandomChannel = function (originalMessage) {
+
+    var replyMessage = '';
+
+    var user = this._getUserById(originalMessage.user);
+
+    if (!this._isFromAllowedUser(originalMessage)) {
+        replyMessage = 'Hello ' + user.name + '. Please contact my creator if you like to use me.';
+    } else {
+        replyMessage = "My master demands an apology for my downtime the other day. I am deeply sorry, masters.";
+    }
+
+    //reply
+    this.postMessageToChannel("random", replyMessage, { as_user: true });
+};
+
 NoisyBot.prototype._getChannelById = function (channelId) {
     return this.channels.filter(function (item) {
         return item.id === channelId;
+    })[0];
+};
+
+NoisyBot.prototype._getChannelByName = function (channelName) {
+    return this.channels.filter(function (item) {
+        return item.name === channelName;
     })[0];
 };
 
