@@ -78,8 +78,6 @@ NoisyBot.prototype._welcomeMessage = function () {
 };
 
 NoisyBot.prototype._onMessage = function (message) {
-    console.log('got message');
-    console.log(message);
 
     if (!this._isChatMessage(message)) {
         return;
@@ -97,6 +95,10 @@ NoisyBot.prototype._onMessage = function (message) {
 
     if (this._isMentioningSpecialKeywords(message)) {
         this._replyToRandomChannel(message);
+    }
+
+    if (this._isMentioningSystemTest(message)) {
+        this._replyToFunctionTest(message);
     }
 };
 
@@ -144,6 +146,10 @@ NoisyBot.prototype._isMentioningSpecialKeywords = function (message) {
     return message.text.toLowerCase().indexOf('apologizedowntime') > -1;
 };
 
+NoisyBot.prototype._isMentioningSystemTest = function (message) {
+    return message.text.toLowerCase().indexOf('systemtest') > -1;
+};
+
 NoisyBot.prototype._replyToLight = function (originalMessage) {
 
     var replyMessage = '';
@@ -167,6 +173,33 @@ NoisyBot.prototype._replyToLight = function (originalMessage) {
         var channel = this._getChannelById(originalMessage.channel);
         this.postMessageToChannel(channel.name, replyMessage, { as_user: true });
     }
+    console.log(getDateTime() + ": Lightning: " + replyMessage);
+};
+
+NoisyBot.prototype._replyToFunctionTest = function (originalMessage) {
+
+    var replyMessage = '';
+
+    var user = this._getUserById(originalMessage.user);
+
+    if (!this._isFromAllowedUser(originalMessage)) {
+        replyMessage = 'Hello ' + user.name + '. You dont seem to have permission to invoke a system diagnistics test. Please contact my creator if you like to use me.';
+    } else {
+        replyMessage = 'I am punching the transistor, master ' + user.name + '. Function testing...';
+        //turn on transistors
+        turnOnLights(0.5);
+    }
+
+    if (this._isDirectConversation(originalMessage)) {
+        var user = this._getUserById(originalMessage.user);
+        this.postMessageToUser(user.name, replyMessage, { as_user: true });
+    }
+    //reply 
+    if (this._isChannelConversation(originalMessage)) {
+        var channel = this._getChannelById(originalMessage.channel);
+        this.postMessageToChannel(channel.name, replyMessage, { as_user: true });
+    }
+    console.log(getDateTime() + ": FunctionTest: " + replyMessage);
 };
 
 NoisyBot.prototype._replyToLocalIp = function (originalMessage) {
@@ -262,4 +295,28 @@ function retrieveUserWhiteList(noisybot) {
 
 function turnOnLights(seconds) {
     return hardware.enableLights(seconds);
+}
+
+function getDateTime() {
+
+    var date = new Date();
+
+    var hour = date.getHours();
+    hour = (hour < 10 ? "0" : "") + hour;
+
+    var min  = date.getMinutes();
+    min = (min < 10 ? "0" : "") + min;
+
+    var sec  = date.getSeconds();
+    sec = (sec < 10 ? "0" : "") + sec;
+
+    var year = date.getFullYear();
+
+    var month = date.getMonth() + 1;
+    month = (month < 10 ? "0" : "") + month;
+
+    var day  = date.getDate();
+    day = (day < 10 ? "0" : "") + day;
+
+    return year + "." + month + "." + day + " " + hour + ":" + min + ":" + sec;
 }
